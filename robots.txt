@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://eletricamedina.com.br/sitemap.xml
