@@ -7,15 +7,6 @@
   const STORAGE_KEY = 'eletricamedina_cookie_consent';
   const CONSENT_VERSION = '1.0';
 
-  const defaultConsent = {
-    version: CONSENT_VERSION,
-    timestamp: null,
-    necessary: true,
-    analytics: false,
-    marketing: false,
-    status: 'pending'
-  };
-
   function getSavedConsent() {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
@@ -53,12 +44,18 @@
 
   function showBanner() {
     const banner = document.getElementById('medina-cookie-banner');
-    if (banner) banner.style.display = 'block';
+    if (banner) {
+      banner.style.display = 'block';
+      document.body.classList.add('cookie-banner-active');
+    }
   }
 
   function hideBanner() {
     const banner = document.getElementById('medina-cookie-banner');
-    if (banner) banner.style.display = 'none';
+    if (banner) {
+      banner.style.display = 'none';
+      document.body.classList.remove('cookie-banner-active');
+    }
   }
 
   function showModal() {
@@ -73,12 +70,16 @@
         if (marketingCheckbox) marketingCheckbox.checked = saved.marketing;
       }
       modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
     }
   }
 
   function hideModal() {
     const modal = document.getElementById('medina-cookie-modal');
-    if (modal) modal.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
   }
 
   document.addEventListener('DOMContentLoaded', function () {
@@ -155,5 +156,11 @@
         if (e.target === modalOverlay) hideModal();
       });
     }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modalOverlay && modalOverlay.style.display === 'flex') {
+        hideModal();
+      }
+    });
   });
 })();
