@@ -3,6 +3,12 @@
   "name": "eletrica-medina",
   "compatibility_date": "2026-11-26",
   "assets": {
-    "directory": "."
+    "directory": ".",
+    "exclude": [
+      ".git/**",
+      ".wrangler/**",
+      "node_modules/**",
+      "README.md"
+    ]
   }
 }
