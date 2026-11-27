@@ -1719,6 +1719,29 @@ img {
   color: #fbbf24;
 }
 
+.footer-bottom-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.footer-developer-credit {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.footer-developer-credit a {
+  color: #fbbf24;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.footer-developer-credit a:hover {
+  color: #ffffff;
+}
+
 /* ==========================================================================
    Botão Flutuante de WhatsApp 24h (Com Adaptação Inteligente ao Banner LGPD)
    ========================================================================== */
