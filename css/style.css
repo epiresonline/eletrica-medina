@@ -949,6 +949,12 @@ img {
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
+.form-input.input-error {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25) !important;
+  background-color: rgba(220, 38, 38, 0.04) !important;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;

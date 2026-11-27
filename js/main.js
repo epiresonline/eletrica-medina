@@ -29,7 +29,6 @@ function initThemeToggle() {
   const toggleBtnDrawer = document.getElementById('theme-toggle-drawer');
   const html = document.documentElement;
 
-  // Carrega preferência salva ou mantém light
   const savedTheme = localStorage.getItem(THEME_KEY) || 'light';
   applyTheme(savedTheme);
 
@@ -101,6 +100,8 @@ function initSimulator() {
   const form = document.getElementById('form-atendimento-medina');
   if (!form) return;
 
+  const inputNome = document.getElementById('sim-nome');
+  const inputTelefone = document.getElementById('sim-telefone');
   const selectCidade = document.getElementById('sim-cidade');
   const selectBairroPoa = document.getElementById('sim-bairro-poa');
   const inputBairroOutro = document.getElementById('sim-bairro-outro');
@@ -116,23 +117,43 @@ function initSimulator() {
   const estimateZone = document.getElementById('estimate-zone');
   const estimateBadge = document.getElementById('estimate-badge');
 
+  // Máscara dinâmica de telefone brasileiro (DDD) 99999-9999
+  if (inputTelefone) {
+    inputTelefone.addEventListener('input', function (e) {
+      let val = e.target.value.replace(/\D/g, '');
+      if (val.length > 11) val = val.slice(0, 11);
+
+      if (val.length > 6) {
+        e.target.value = `(${val.slice(0, 2)}) ${val.slice(2, 7)}-${val.slice(7)}`;
+      } else if (val.length > 2) {
+        e.target.value = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+      } else if (val.length > 0) {
+        e.target.value = `(${val}`;
+      } else {
+        e.target.value = '';
+      }
+      inputTelefone.classList.remove('input-error');
+    });
+  }
+
+  if (inputNome) {
+    inputNome.addEventListener('input', function () {
+      inputNome.classList.remove('input-error');
+    });
+  }
+
   // Tabela de Estimativa de Deslocamento em Porto Alegre e Região
   const timeEstimates = {
-    // Zona Central / Nobre de Porto Alegre
-    'central': { eta: '25 a 35 min', zone: 'Região Central / Nobre de POA' },
-    // Zona Norte POA
+    'central': { eta: '25 a 35 min', zone: 'Regi\u00E3o Central / Nobre de POA' },
     'norte': { eta: '30 a 45 min', zone: 'Zona Norte de Porto Alegre' },
-    // Zona Sul POA
     'sul': { eta: '35 a 50 min', zone: 'Zona Sul de Porto Alegre' },
-    // Zona Leste POA
     'leste': { eta: '30 a 45 min', zone: 'Zona Leste de Porto Alegre' },
-    // Cidades Metropolitanas
     'canoas': { eta: '35 a 50 min', zone: 'Canoas e Eixo Norte' },
-    'gravatai': { eta: '45 a 60 min', zone: 'Gravataí / Cachoeirinha' },
-    'cachoeirinha': { eta: '40 a 55 min', zone: 'Cachoeirinha e Vizinhanças' },
-    'viamao': { eta: '45 a 65 min', zone: 'Viamão e Região' },
+    'gravatai': { eta: '45 a 60 min', zone: 'Gravata\u00ED / Cachoeirinha' },
+    'cachoeirinha': { eta: '40 a 55 min', zone: 'Cachoeirinha e Vizinhan\u00E7as' },
+    'viamao': { eta: '45 a 65 min', zone: 'Viam\u00E3o e Regi\u00E3o' },
     'alvorada': { eta: '40 a 55 min', zone: 'Alvorada e Eixo Leste' },
-    'outra': { eta: '45 a 70 min', zone: 'Região Metropolitana Ampliada' }
+    'outra': { eta: '45 a 70 min', zone: 'Regi\u00E3o Metropolitana Ampliada' }
   };
 
   function updateLocationView() {
@@ -155,8 +176,8 @@ function initSimulator() {
     const est = timeEstimates[group] || timeEstimates['central'];
 
     if (estimateEta) estimateEta.textContent = est.eta;
-    if (estimateZone) estimateZone.textContent = `${selectedOption.text} — ${est.zone}`;
-    if (estimateBadge) estimateBadge.textContent = '🟢 Deslocamento Imediato POA';
+    if (estimateZone) estimateZone.textContent = `${selectedOption.text} \u2014 ${est.zone}`;
+    if (estimateBadge) estimateBadge.textContent = '\u{1F7E2} Deslocamento Imediato POA';
   }
 
   function updateMetroEstimate(cidade) {
@@ -170,8 +191,8 @@ function initSimulator() {
 
     const est = timeEstimates[key] || timeEstimates['outra'];
     if (estimateEta) estimateEta.textContent = est.eta;
-    if (estimateZone) estimateZone.textContent = `${cidade} — ${est.zone}`;
-    if (estimateBadge) estimateBadge.textContent = '🚗 Deslocamento Metropolitano';
+    if (estimateZone) estimateZone.textContent = `${cidade} \u2014 ${est.zone}`;
+    if (estimateBadge) estimateBadge.textContent = '\u{1F697} Deslocamento Metropolitano';
   }
 
   function updateUrgencyView() {
@@ -201,8 +222,28 @@ function initSimulator() {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const nome = (document.getElementById('sim-nome').value || '').trim();
-    const telefone = (document.getElementById('sim-telefone').value || '').trim();
+    const nome = (inputNome ? inputNome.value : '').trim();
+    const telefone = (inputTelefone ? inputTelefone.value : '').trim();
+
+    // Validação estrita de campos obrigatórios
+    if (!nome) {
+      if (inputNome) {
+        inputNome.focus();
+        inputNome.classList.add('input-error');
+      }
+      alert('Por favor, informe seu nome para iniciarmos o atendimento.');
+      return;
+    }
+
+    if (!telefone || telefone.replace(/\D/g, '').length < 8) {
+      if (inputTelefone) {
+        inputTelefone.focus();
+        inputTelefone.classList.add('input-error');
+      }
+      alert('Por favor, informe seu telefone / WhatsApp de contato com DDD.');
+      return;
+    }
+
     const cidade = selectCidade.value;
     let bairro = '';
 
@@ -210,45 +251,46 @@ function initSimulator() {
       const selectedOption = selectBairroPoa.options[selectBairroPoa.selectedIndex];
       bairro = selectedOption ? selectedOption.text : 'Porto Alegre';
     } else {
-      bairro = (inputBairroOutro.value || '').trim() || 'Região Metropolitana';
+      bairro = (inputBairroOutro.value || '').trim() || 'Regi\u00E3o Metropolitana';
     }
 
     const modalidadeInput = document.querySelector('input[name="modalidade_atendimento"]:checked');
     const isEmergencia = modalidadeInput && modalidadeInput.value === 'emergencia';
-    const modalidadeTexto = isEmergencia ? 'Plantão de Emergência 24h (Imediato)' : 'Agendamento Comercial Regular';
+    const modalidadeTexto = isEmergencia ? 'Plant\u00E3o de Emerg\u00EAncia 24h (Imediato)' : 'Agendamento Comercial Regular';
 
-    let taxaTexto = 'Não aplicável (Horário Comercial)';
+    let taxaTexto = 'N\u00E3o aplic\u00E1vel (Hor\u00E1rio Comercial)';
     if (isEmergencia) {
       const taxaInput = document.querySelector('input[name="aceite_taxa"]:checked');
       if (taxaInput && taxaInput.value === 'sim') {
-        taxaTexto = 'SIM — Aceita a taxa de deslocamento/urgência do plantão 24h';
+        taxaTexto = 'SIM \u2014 Aceita a taxa de deslocamento/urg\u00EAncia do plant\u00E3o 24h';
       } else {
-        taxaTexto = 'NÃO — Deseja confirmar valores antes ou agendar';
+        taxaTexto = 'N\u00C3O \u2014 Deseja confirmar valores antes ou agendar';
       }
     }
 
     const servico = document.getElementById('sim-servico').value;
-    const descricao = (document.getElementById('sim-descricao').value || '').trim() || 'Sem observações adicionais.';
-    const tempoEstimado = estimateEta ? estimateEta.textContent : '30 a 45 min';
+    const descricao = (document.getElementById('sim-descricao').value || '').trim() || 'Sem observa\u00E7\u00F5es adicionais.';
+    const tempoEstimado = estimateEta ? estimateEta.textContent.replace(/[\u{1F7E2}\u{1F697}]/gu, '').trim() : '30 a 45 min';
 
-    // Montagem da mensagem estruturada
+    // Montagem da mensagem estruturada com Unicode escapes 100% seguros
     const msg = [
-      `*SOLICITAÇÃO DE ATENDIMENTO — ELÉTRICA MEDINA* ⚡`,
+      `*SOLICITA\u00C7\u00C3O DE ATENDIMENTO \u2014 EL\u00C9TRICA MEDINA* \u26A1`,
       ``,
-      `👤 *Cliente:* ${nome}`,
-      `📞 *Contato:* ${telefone}`,
-      `📍 *Localização:* ${bairro}, ${cidade}`,
-      `⏱️ *Tempo Estimado POA:* ${tempoEstimado}`,
-      `🚨 *Modalidade:* ${modalidadeTexto}`,
-      `💰 *Taxa de Urgência:* ${taxaTexto}`,
-      `🛠️ *Serviço Solicitado:* ${servico}`,
-      `📝 *Detalhes:* ${descricao}`,
+      `\u{1F464} *Cliente:* ${nome}`,
+      `\u{1F4DE} *Contato:* ${telefone}`,
+      `\u{1F4CD} *Localiza\u00E7\u00E3o:* ${bairro}, ${cidade}`,
+      `\u23F1\uFE0F *Tempo Estimado POA:* ${tempoEstimado}`,
+      `\u{1F6A8} *Modalidade:* ${modalidadeTexto}`,
+      `\u{1F4B0} *Taxa de Urg\u00EAncia:* ${taxaTexto}`,
+      `\u{1F6E0}\uFE0F *Servi\u00E7o Solicitado:* ${servico}`,
+      `\u{1F4DD} *Detalhes:* ${descricao}`,
       ``,
-      `_Mensagem originada pelo site oficial Elétrica Medina_`
+      `_Mensagem originada pelo site oficial El\u00E9trica Medina_`
     ].join('\n');
 
     const whatsappNumber = '5551992108340';
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+    // Endpoint oficial e universal do WhatsApp
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(msg)}`;
 
     // Redireciona o usuário para o WhatsApp
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
@@ -267,7 +309,6 @@ function initFaqAccordion() {
     trigger.addEventListener('click', function () {
       const isOpen = item.classList.contains('is-open');
 
-      // Fecha outros itens
       faqItems.forEach(other => {
         if (other !== item) {
           other.classList.remove('is-open');
@@ -276,7 +317,6 @@ function initFaqAccordion() {
         }
       });
 
-      // Alterna o item atual
       if (isOpen) {
         item.classList.remove('is-open');
         trigger.setAttribute('aria-expanded', 'false');
